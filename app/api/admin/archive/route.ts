@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Get official document path
+    // Get official document information
     const officialDocuments = application.officialDocuments as any[]
     const officialDocument = officialDocuments && officialDocuments.length > 0 
       ? officialDocuments[0] 
@@ -126,6 +126,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: false,
         message: 'No official document found for this application'
+      }, { status: 400 })
+    }
+
+    // Create a reference path for the official document
+    // Since we now use Base64 storage, we'll create a logical path reference
+    let officialDocumentPath: string
+    
+    if (officialDocument.filePath) {
+      // Use existing file path if available (legacy documents)
+      officialDocumentPath = officialDocument.filePath
+    } else if (officialDocument.fileData) {
+      // For Base64 documents, create a logical reference path
+      officialDocumentPath = `base64/${applicationId}/${officialDocument.fileName}`
+    } else {
+      return NextResponse.json({
+        success: false,
+        message: 'Official document has no valid storage reference'
       }, { status: 400 })
     }
 
@@ -150,7 +167,7 @@ export async function POST(request: NextRequest) {
       serviceType,
       medicalService,
       referralReason: application.reasonForApplication, // Use original application reason
-      officialDocumentPath: officialDocument.filePath,
+      officialDocumentPath: officialDocumentPath, // Use the determined path
       archiveNumber,
       archivedBy
     })
