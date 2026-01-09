@@ -78,7 +78,8 @@ interface Application {
     fileName: string
     fileType: string
     fileSize: number
-    filePath: string
+    filePath?: string  // Optional for backward compatibility
+    fileData?: string  // Base64 data
     documentType: string
     uploadedAt: string
     uploadedBy: string
@@ -619,7 +620,7 @@ export default function AllApplicationsPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleDownloadDocument(selectedApplication._id, index, doc.fileName)}
+                            onClick={() => handleDownloadDocument(selectedApplication._id, index, doc.fileName, 'application')}
                           >
                             <Download className="h-3 w-3 mr-1" />
                             Download
@@ -655,7 +656,7 @@ export default function AllApplicationsPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleDownloadDocument(selectedApplication._id, index, doc.fileName)}
+                            onClick={() => handleDownloadDocument(selectedApplication._id, index, doc.fileName, 'official')}
                             className="border-green-300 text-green-700 hover:bg-green-100"
                           >
                             <Download className="h-3 w-3 mr-1" />
