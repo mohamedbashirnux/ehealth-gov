@@ -556,7 +556,28 @@ export default function UserDashboard() {
         <Dialog open={showApplicationDetailsDialog} onOpenChange={setShowApplicationDetailsDialog}>
           <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Application Details</DialogTitle>
+              <DialogTitle className="flex items-center justify-between">
+                <span>Application Details</span>
+                {selectedApplication && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={async () => {
+                      try {
+                        const response = await fetch(`/api/debug/application?applicationId=${selectedApplication._id}`)
+                        const data = await response.json()
+                        console.log('Debug data:', data)
+                        toast.success('Debug data logged to console')
+                      } catch (error) {
+                        console.error('Debug error:', error)
+                        toast.error('Debug failed')
+                      }
+                    }}
+                  >
+                    Debug
+                  </Button>
+                )}
+              </DialogTitle>
             </DialogHeader>
             {selectedApplication && (
               <div className="space-y-6">
@@ -687,8 +708,14 @@ export default function UserDashboard() {
                                   
                                   if (!response.ok) {
                                     const errorData = await response.json()
-                                    console.error('Download failed:', errorData)
-                                    toast.error(`Download failed: ${errorData.message}`)
+                                    console.error('Application document download failed:', errorData)
+                                    
+                                    // Show user-friendly message for old documents
+                                    if (errorData.message && errorData.message.includes('old system')) {
+                                      toast.error('This document needs to be re-uploaded. Please contact support.')
+                                    } else {
+                                      toast.error(`Download failed: ${errorData.message || 'Unknown error'}`)
+                                    }
                                     return
                                   }
                                   
@@ -761,8 +788,14 @@ export default function UserDashboard() {
                                   
                                   if (!response.ok) {
                                     const errorData = await response.json()
-                                    console.error('Download failed:', errorData)
-                                    toast.error(`Download failed: ${errorData.message}`)
+                                    console.error('Official document download failed:', errorData)
+                                    
+                                    // Show user-friendly message for old documents
+                                    if (errorData.message && errorData.message.includes('old system')) {
+                                      toast.error('This official document needs to be re-uploaded by an admin. Please contact support.')
+                                    } else {
+                                      toast.error(`Download failed: ${errorData.message || 'Unknown error'}`)
+                                    }
                                     return
                                   }
                                   

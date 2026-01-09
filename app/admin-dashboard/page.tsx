@@ -356,6 +356,31 @@ export default function AdminDashboard() {
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
+      {/* Migration Button */}
+      <div className="flex justify-end">
+        <Button
+          variant="outline"
+          onClick={async () => {
+            try {
+              const response = await fetch('/api/admin/migrate-documents', {
+                method: 'POST'
+              })
+              const result = await response.json()
+              if (result.success) {
+                toast.success(`Migration completed: ${result.details.migratedCount} documents migrated`)
+              } else {
+                toast.error(`Migration failed: ${result.message}`)
+              }
+            } catch (error) {
+              console.error('Migration error:', error)
+              toast.error('Migration failed')
+            }
+          }}
+        >
+          Migrate Documents
+        </Button>
+      </div>
+      
       {/* Statistics Cards */}
       <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
         <Card className="bg-gradient-to-br from-blue-500 to-purple-600 border-0 shadow-lg hover:shadow-xl transition-all duration-300">

@@ -103,6 +103,15 @@ export async function GET(request: NextRequest) {
         console.log('Full file path:', fullPath)
         if (!fs.existsSync(fullPath)) {
           console.error('File not found on disk:', fullPath)
+          
+          // Special handling for production/Vercel where file system doesn't exist
+          if (process.env.NODE_ENV === 'production') {
+            return NextResponse.json({
+              success: false,
+              message: 'This document was uploaded using an old system and needs to be re-uploaded by an admin. Please contact support.'
+            }, { status: 404 })
+          }
+          
           return NextResponse.json({
             success: false,
             message: 'File not found on disk'
@@ -112,13 +121,36 @@ export async function GET(request: NextRequest) {
         console.log('File read successfully, size:', buffer.length)
       } catch (error) {
         console.error('Error reading file from disk:', error)
+        
+        // Special handling for production/Vercel
+        if (process.env.NODE_ENV === 'production') {
+          return NextResponse.json({
+            success: false,
+            message: 'This document was uploaded using an old system and is not accessible in the current deployment. Please contact an admin to re-upload this document.'
+          }, { status: 500 })
+        }
+        
         return NextResponse.json({
           success: false,
           message: 'Failed to read file from disk'
         }, { status: 500 })
       }
     } else {
-      console.error('No file data or path available')
+      console.error('No file data or path available for document:', {
+        fileName: document.fileName,
+        hasFileData: !!document.fileData,
+        hasFilePath: !!document.filePath,
+        filePath: document.filePath
+      })
+      
+      // Special message for official documents that might need migration
+      if (documentType === 'official' && document.filePath && !document.fileData) {
+        return NextResponse.json({
+          success: false,
+          message: 'This official document needs to be re-uploaded by an admin. The file is stored in an old format that is not compatible with the current system.'
+        }, { status: 404 })
+      }
+      
       return NextResponse.json({
         success: false,
         message: 'File data not available'
@@ -132,7 +164,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Return file with proper headers
-    return new Response(buffer, {
+    return new Response(new Uint8Array(buffer), {
       status: 200,
       headers: {
         'Content-Type': document.fileType,
