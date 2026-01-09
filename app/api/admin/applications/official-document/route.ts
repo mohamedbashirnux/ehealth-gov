@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/mongoose'
 import { Application } from '@/models/application'
+import { User } from '@/models/user'
+import { Service } from '@/models/service'
+import { Admin } from '@/models/admin'
 
 // POST - Admin uploads official document for approved application (store in MongoDB)
 export async function POST(request: NextRequest) {
   try {
     await connectDB()
+    
+    // Ensure all models are registered
+    const models = { Application, User, Service, Admin }
     
     const formData = await request.formData()
     

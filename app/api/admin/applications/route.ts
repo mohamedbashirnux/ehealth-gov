@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/mongoose'
 import { Application } from '@/models/application'
+import { Service } from '@/models/service'
+import { User } from '@/models/user'
+import { Admin } from '@/models/admin'
 
 // GET - Get all applications for admin review
 export async function GET(request: NextRequest) {
   try {
     await connectDB()
+    
+    // Ensure all models are registered
+    const models = { Application, Service, User, Admin }
     
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')

@@ -2,11 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/mongoose'
 import { Archive } from '@/models/archive'
 import { Application } from '@/models/application'
+import { User } from '@/models/user'
+import { Service } from '@/models/service'
+import { Admin } from '@/models/admin'
 
 // GET - Get all archived records
 export async function GET(request: NextRequest) {
   try {
     await connectDB()
+    
+    // Ensure all models are registered
+    const models = { Archive, Application, User, Service, Admin }
     
     const { searchParams } = new URL(request.url)
     const medicalService = searchParams.get('medicalService')
@@ -68,6 +74,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     await connectDB()
+    
+    // Ensure all models are registered
+    const models = { Archive, Application, User, Service, Admin }
     
     const body = await request.json()
     const { applicationId, archivedBy } = body

@@ -5,12 +5,14 @@ import { Archive } from '@/models/archive'
 import { Service } from '@/models/service'
 import { User } from '@/models/user'
 import { Admin } from '@/models/admin'
-import mongoose from 'mongoose'
 
 // GET - Get all data for reports (applications and archives)
 export async function GET(request: NextRequest) {
   try {
     await connectDB()
+    
+    // Ensure all models are registered
+    const models = { Application, Archive, Service, User, Admin }
     
     const { searchParams } = new URL(request.url)
     const dataType = searchParams.get('type') || 'all' // 'applications', 'archives', or 'all'
@@ -21,10 +23,6 @@ export async function GET(request: NextRequest) {
     if (dataType === 'applications' || dataType === 'all') {
       try {
         console.log('Fetching applications from database...')
-        
-        // Check if services exist first
-        const serviceCount = await Service.countDocuments({})
-        console.log(`Found ${serviceCount} services in database`)
         
         // First try without populate to see if we get basic data
         const applications = await Application.find({})
@@ -44,18 +42,15 @@ export async function GET(request: NextRequest) {
             populatedApplications = await Application.find({})
               .populate({
                 path: 'serviceId',
-                select: 'name description category',
-                model: 'Service'
+                select: 'name description category'
               })
               .populate({
                 path: 'userId', 
-                select: 'firstName lastName username phoneNumber',
-                model: 'User'
+                select: 'firstName lastName username phoneNumber'
               })
               .populate({
                 path: 'reviewedBy',
-                select: 'username',
-                model: 'Admin'
+                select: 'username'
               })
               .sort({ createdAt: -1 })
               .lean()
@@ -68,6 +63,12 @@ export async function GET(request: NextRequest) {
                 console.log(`Application ${index + 1}: serviceId not populated, ID: ${app.serviceId}`)
               } else {
                 console.log(`Application ${index + 1}: serviceId populated successfully: ${app.serviceId.name}`)
+              }
+              
+              if (!app.userId || typeof app.userId === 'string') {
+                console.log(`Application ${index + 1}: userId not populated, ID: ${app.userId}`)
+              } else {
+                console.log(`Application ${index + 1}: userId populated successfully: ${app.userId.firstName} ${app.userId.lastName}`)
               }
             })
             
