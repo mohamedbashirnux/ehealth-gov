@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/mongoose'
 import { Application } from '@/models/application'
 import { User } from '@/models/user'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
 
 // POST - Create new application
 export async function POST(request: NextRequest) {
@@ -76,41 +73,41 @@ export async function POST(request: NextRequest) {
       }, { status: 404 })
     }
 
-    // Handle file uploads
+    // Handle file uploads - Store in MongoDB as Base64
     const documents = []
     const files = formData.getAll('documents') as File[]
     const requirementTypes = formData.getAll('requirementTypes') as string[]
 
     if (files.length > 0) {
-      // Create uploads directory if it doesn't exist
-      const uploadsDir = join(process.cwd(), 'public', 'uploads', 'applications')
-      if (!existsSync(uploadsDir)) {
-        await mkdir(uploadsDir, { recursive: true })
-      }
-
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
         const requirementType = requirementTypes[i]
         
         if (file && file.size > 0) {
-          // Generate unique filename
-          const timestamp = Date.now()
-          const filename = `${timestamp}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
-          const filepath = join(uploadsDir, filename)
-          
-          // Save file
-          const bytes = await file.arrayBuffer()
-          const buffer = Buffer.from(bytes)
-          await writeFile(filepath, buffer)
-          
-          // Add document info
-          documents.push({
-            fileName: file.name,
-            fileType: file.type,
-            fileSize: file.size,
-            filePath: `/uploads/applications/${filename}`,
-            requirementType: requirementType
-          })
+          try {
+            // Convert file to Base64 and store in MongoDB
+            const bytes = await file.arrayBuffer()
+            const buffer = Buffer.from(bytes)
+            const base64Data = buffer.toString('base64')
+            
+            // Add document info with Base64 data
+            documents.push({
+              fileName: file.name,
+              fileType: file.type,
+              fileSize: file.size,
+              fileData: base64Data, // Store file as Base64 in MongoDB
+              requirementType: requirementType,
+              uploadedAt: new Date()
+            })
+            
+            console.log(`File ${file.name} converted to Base64 and stored in MongoDB`)
+          } catch (fileError) {
+            console.error(`Error processing file ${file.name}:`, fileError)
+            return NextResponse.json({
+              success: false,
+              message: `Failed to process file: ${file.name}`
+            }, { status: 500 })
+          }
         }
       }
     }

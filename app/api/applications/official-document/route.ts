@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/mongoose'
 import { Application } from '@/models/application'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
 
-// POST - Upload official document for approved application
+// POST - Upload official document for approved application (store in MongoDB)
 export async function POST(request: NextRequest) {
   try {
     await connectDB()
@@ -66,28 +63,17 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), 'public', 'uploads', 'official-documents')
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
-    }
-
-    // Generate unique filename
-    const timestamp = Date.now()
-    const filename = `${timestamp}-${officialDocument.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
-    const filepath = join(uploadsDir, filename)
-    
-    // Save file
+    // Convert file to Base64 for MongoDB storage
     const bytes = await officialDocument.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    await writeFile(filepath, buffer)
+    const base64Data = buffer.toString('base64')
     
-    // Add official document to application
+    // Add official document to application (stored in MongoDB as Base64)
     const officialDocumentData = {
       fileName: officialDocument.name,
       fileType: officialDocument.type,
       fileSize: officialDocument.size,
-      filePath: `/uploads/official-documents/${filename}`,
+      fileData: base64Data, // Store as Base64 in MongoDB
       documentType: 'Official Document',
       uploadedAt: new Date(),
       uploadedBy: 'user'
@@ -106,7 +92,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Official document uploaded successfully. Application status updated to completed.',
-      document: officialDocumentData
+      document: {
+        fileName: officialDocument.name,
+        fileSize: officialDocument.size,
+        uploadedAt: officialDocumentData.uploadedAt
+      }
     })
 
   } catch (error) {

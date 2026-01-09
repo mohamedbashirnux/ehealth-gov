@@ -96,14 +96,25 @@ export default function DocumentsPage() {
 
   const fetchApplicationsWithDocuments = async () => {
     try {
-      const response = await fetch('/api/admin/applications')
+      console.log('Fetching applications for documents page...')
+      const response = await fetch('/api/admin/reports?type=applications')
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
+      
       if (data.success) {
+        console.log('Documents page loaded:', data.data.applications?.length || 0)
         // Filter applications that are approved or completed (potential for official documents)
-        const relevantApps = data.applications.filter((app: Application) => 
+        const relevantApps = (data.data.applications || []).filter((app: Application) => 
           app.status === 'approved' || app.status === 'completed'
         )
         setApplications(relevantApps)
+      } else {
+        console.error('Failed to fetch applications:', data.message)
+        toast.error('Failed to fetch applications')
       }
     } catch (error) {
       console.error('Error fetching applications:', error)
@@ -117,9 +128,11 @@ export default function DocumentsPage() {
     setShowDetailsDialog(true)
   }
 
-  const handleDownloadDocument = (filePath: string, fileName: string) => {
+  const handleDownloadDocument = (applicationId: string, documentIndex: number, fileName: string) => {
+    // Use the new download API endpoint for Base64 files
+    const downloadUrl = `/api/files/download?applicationId=${applicationId}&documentIndex=${documentIndex}`
     const link = document.createElement('a')
-    link.href = filePath
+    link.href = downloadUrl
     link.download = fileName
     link.target = '_blank'
     document.body.appendChild(link)
@@ -467,7 +480,7 @@ export default function DocumentsPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleDownloadDocument(doc.filePath, doc.fileName)}
+                            onClick={() => handleDownloadDocument(selectedApplication._id, index, doc.fileName)}
                             className="border-green-300 text-green-700 hover:bg-green-100"
                           >
                             <Download className="h-3 w-3 mr-1" />
