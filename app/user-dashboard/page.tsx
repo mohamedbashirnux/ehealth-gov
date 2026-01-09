@@ -670,16 +670,44 @@ export default function UserDashboard() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => {
-                                // Use the download API for application documents
-                                const downloadUrl = `/api/files/download?applicationId=${selectedApplication._id}&documentIndex=${index}&type=application`
-                                const link = document.createElement('a')
-                                link.href = downloadUrl
-                                link.download = doc.fileName
-                                link.target = '_blank'
-                                document.body.appendChild(link)
-                                link.click()
-                                document.body.removeChild(link)
+                              onClick={async () => {
+                                try {
+                                  console.log('Downloading application document:', {
+                                    applicationId: selectedApplication._id,
+                                    documentIndex: index,
+                                    fileName: doc.fileName,
+                                    type: 'application'
+                                  })
+                                  
+                                  // Use fetch to get the file and handle errors properly
+                                  const downloadUrl = `/api/files/download?applicationId=${selectedApplication._id}&documentIndex=${index}&type=application`
+                                  console.log('Download URL:', downloadUrl)
+                                  
+                                  const response = await fetch(downloadUrl)
+                                  
+                                  if (!response.ok) {
+                                    const errorData = await response.json()
+                                    console.error('Download failed:', errorData)
+                                    toast.error(`Download failed: ${errorData.message}`)
+                                    return
+                                  }
+                                  
+                                  // Get the blob and create download link
+                                  const blob = await response.blob()
+                                  const url = window.URL.createObjectURL(blob)
+                                  const link = document.createElement('a')
+                                  link.href = url
+                                  link.download = doc.fileName
+                                  document.body.appendChild(link)
+                                  link.click()
+                                  document.body.removeChild(link)
+                                  window.URL.revokeObjectURL(url)
+                                  
+                                  toast.success('Document downloaded successfully!')
+                                } catch (error) {
+                                  console.error('Download error:', error)
+                                  toast.error('Failed to download document')
+                                }
                               }}
                             >
                               <Download className="h-3 w-3 mr-1" />
@@ -716,16 +744,44 @@ export default function UserDashboard() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => {
-                                // Use the download API for official documents
-                                const downloadUrl = `/api/files/download?applicationId=${selectedApplication._id}&documentIndex=${index}&type=official`
-                                const link = document.createElement('a')
-                                link.href = downloadUrl
-                                link.download = doc.fileName
-                                link.target = '_blank'
-                                document.body.appendChild(link)
-                                link.click()
-                                document.body.removeChild(link)
+                              onClick={async () => {
+                                try {
+                                  console.log('Downloading official document:', {
+                                    applicationId: selectedApplication._id,
+                                    documentIndex: index,
+                                    fileName: doc.fileName,
+                                    type: 'official'
+                                  })
+                                  
+                                  // Use fetch to get the file and handle errors properly
+                                  const downloadUrl = `/api/files/download?applicationId=${selectedApplication._id}&documentIndex=${index}&type=official`
+                                  console.log('Download URL:', downloadUrl)
+                                  
+                                  const response = await fetch(downloadUrl)
+                                  
+                                  if (!response.ok) {
+                                    const errorData = await response.json()
+                                    console.error('Download failed:', errorData)
+                                    toast.error(`Download failed: ${errorData.message}`)
+                                    return
+                                  }
+                                  
+                                  // Get the blob and create download link
+                                  const blob = await response.blob()
+                                  const url = window.URL.createObjectURL(blob)
+                                  const link = document.createElement('a')
+                                  link.href = url
+                                  link.download = doc.fileName
+                                  document.body.appendChild(link)
+                                  link.click()
+                                  document.body.removeChild(link)
+                                  window.URL.revokeObjectURL(url)
+                                  
+                                  toast.success('Document downloaded successfully!')
+                                } catch (error) {
+                                  console.error('Download error:', error)
+                                  toast.error('Failed to download document')
+                                }
                               }}
                               className="border-green-300 text-green-700 hover:bg-green-100"
                             >
