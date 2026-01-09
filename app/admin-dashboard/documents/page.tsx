@@ -129,8 +129,8 @@ export default function DocumentsPage() {
   }
 
   const handleDownloadDocument = (applicationId: string, documentIndex: number, fileName: string) => {
-    // Use the new download API endpoint for Base64 files
-    const downloadUrl = `/api/files/download?applicationId=${applicationId}&documentIndex=${documentIndex}`
+    // Use the new download API endpoint for official documents
+    const downloadUrl = `/api/files/download?applicationId=${applicationId}&documentIndex=${documentIndex}&type=official`
     const link = document.createElement('a')
     link.href = downloadUrl
     link.download = fileName

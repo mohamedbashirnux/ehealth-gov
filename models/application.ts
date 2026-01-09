@@ -114,7 +114,11 @@ const ApplicationSchema = new mongoose.Schema({
     },
     filePath: {
       type: String,
-      required: true
+      required: false // Make optional since we're using fileData now
+    },
+    fileData: {
+      type: String, // Base64 encoded file data
+      required: false // Optional for backward compatibility
     },
     documentType: {
       type: String,

@@ -289,9 +289,9 @@ export default function AdminDashboard() {
     setUpdating(false)
   }
 
-  const handleDownloadDocument = (applicationId: string, documentIndex: number, fileName: string) => {
-    // Use the new download API endpoint for Base64 files
-    const downloadUrl = `/api/files/download?applicationId=${applicationId}&documentIndex=${documentIndex}`
+  const handleDownloadDocument = (applicationId: string, documentIndex: number, fileName: string, documentType: 'application' | 'official' = 'application') => {
+    // Use the new download API endpoint with document type
+    const downloadUrl = `/api/files/download?applicationId=${applicationId}&documentIndex=${documentIndex}&type=${documentType}`
     const link = document.createElement('a')
     link.href = downloadUrl
     link.download = fileName
@@ -579,7 +579,7 @@ export default function AdminDashboard() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleDownloadDocument(selectedApplication._id, index, doc.fileName)}
+                              onClick={() => handleDownloadDocument(selectedApplication._id, index, doc.fileName, 'application')}
                             >
                               <Download className="h-3 w-3 mr-1" />
                               Download
@@ -615,7 +615,7 @@ export default function AdminDashboard() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleDownloadDocument(selectedApplication._id, index, doc.fileName)}
+                              onClick={() => handleDownloadDocument(selectedApplication._id, index, doc.fileName, 'official')}
                               className="border-green-300 text-green-700 hover:bg-green-100"
                             >
                               <Download className="h-3 w-3 mr-1" />

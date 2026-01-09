@@ -663,9 +663,29 @@ export default function UserDashboard() {
                               <p className="text-xs text-muted-foreground">{doc.fileName}</p>
                             </div>
                           </div>
-                          <span className="text-xs text-muted-foreground">
-                            {(doc.fileSize / 1024 / 1024).toFixed(2)} MB
-                          </span>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-xs text-muted-foreground">
+                              {(doc.fileSize / 1024 / 1024).toFixed(2)} MB
+                            </span>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                // Use the download API for application documents
+                                const downloadUrl = `/api/files/download?applicationId=${selectedApplication._id}&documentIndex=${index}&type=application`
+                                const link = document.createElement('a')
+                                link.href = downloadUrl
+                                link.download = doc.fileName
+                                link.target = '_blank'
+                                document.body.appendChild(link)
+                                link.click()
+                                document.body.removeChild(link)
+                              }}
+                            >
+                              <Download className="h-3 w-3 mr-1" />
+                              Download
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -697,8 +717,10 @@ export default function UserDashboard() {
                               size="sm"
                               variant="outline"
                               onClick={() => {
+                                // Use the download API for official documents
+                                const downloadUrl = `/api/files/download?applicationId=${selectedApplication._id}&documentIndex=${index}&type=official`
                                 const link = document.createElement('a')
-                                link.href = doc.filePath
+                                link.href = downloadUrl
                                 link.download = doc.fileName
                                 link.target = '_blank'
                                 document.body.appendChild(link)

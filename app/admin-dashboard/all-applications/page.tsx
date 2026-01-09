@@ -267,9 +267,9 @@ export default function AllApplicationsPage() {
     setUpdating(false)
   }
 
-  const handleDownloadDocument = (applicationId: string, documentIndex: number, fileName: string) => {
-    // Use the new download API endpoint for Base64 files
-    const downloadUrl = `/api/files/download?applicationId=${applicationId}&documentIndex=${documentIndex}`
+  const handleDownloadDocument = (applicationId: string, documentIndex: number, fileName: string, documentType: string = 'application') => {
+    // Use the download API endpoint for Base64 files with document type
+    const downloadUrl = `/api/files/download?applicationId=${applicationId}&documentIndex=${documentIndex}&type=${documentType}`
     const link = document.createElement('a')
     link.href = downloadUrl
     link.download = fileName

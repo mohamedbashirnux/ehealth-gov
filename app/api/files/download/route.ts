@@ -1,15 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/mongoose'
 import { Application } from '@/models/application'
+import { User } from '@/models/user'
+import { Service } from '@/models/service'
+import { Admin } from '@/models/admin'
+import fs from 'fs'
+import path from 'path'
 
 // GET - Download file from MongoDB
 export async function GET(request: NextRequest) {
   try {
     await connectDB()
     
+    // Ensure all models are registered
+    const models = { Application, User, Service, Admin }
+    
     const { searchParams } = new URL(request.url)
     const applicationId = searchParams.get('applicationId')
     const documentIndex = searchParams.get('documentIndex')
+    const documentType = searchParams.get('type') || 'application' // 'application' or 'official'
     
     if (!applicationId || documentIndex === null) {
       return NextResponse.json({
@@ -27,28 +36,61 @@ export async function GET(request: NextRequest) {
       }, { status: 404 })
     }
 
-    // Get the document
+    // Get the document based on type
     const docIndex = parseInt(documentIndex)
-    const document = application.documents[docIndex]
+    let document: any = null
     
-    if (!document) {
-      return NextResponse.json({
-        success: false,
-        message: 'Document not found'
-      }, { status: 404 })
+    if (documentType === 'official') {
+      // Handle official documents
+      document = application.officialDocuments?.[docIndex]
+      if (!document) {
+        return NextResponse.json({
+          success: false,
+          message: 'Official document not found'
+        }, { status: 404 })
+      }
+    } else {
+      // Handle application documents
+      document = application.documents?.[docIndex]
+      if (!document) {
+        return NextResponse.json({
+          success: false,
+          message: 'Application document not found'
+        }, { status: 404 })
+      }
     }
 
-    // Check if document has Base64 data
-    if (!document.fileData) {
+    let buffer: Buffer
+
+    // Check if document has Base64 data (new format)
+    if (document.fileData) {
+      // Convert Base64 back to buffer
+      buffer = Buffer.from(document.fileData, 'base64')
+    } else if (document.filePath) {
+      // Handle legacy file path format
+      try {
+        const fullPath = path.join(process.cwd(), 'uploads', document.filePath)
+        if (!fs.existsSync(fullPath)) {
+          return NextResponse.json({
+            success: false,
+            message: 'File not found on disk'
+          }, { status: 404 })
+        }
+        buffer = fs.readFileSync(fullPath)
+      } catch (error) {
+        console.error('Error reading file from disk:', error)
+        return NextResponse.json({
+          success: false,
+          message: 'Failed to read file from disk'
+        }, { status: 500 })
+      }
+    } else {
       return NextResponse.json({
         success: false,
         message: 'File data not available'
       }, { status: 404 })
     }
 
-    // Convert Base64 back to buffer
-    const buffer = Buffer.from(document.fileData, 'base64')
-    
     // Return file with proper headers
     return new NextResponse(buffer, {
       status: 200,
