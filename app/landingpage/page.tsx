@@ -217,7 +217,7 @@ export default function LandingPage() {
                   alt="Ministry of Health Logo"
                   width={50}
                   height={50}
-                  className="w-10 h-10 sm:w-12 sm:h-12 md:w-15 md:h-15 rounded-xl shadow-lg"
+                  className="w-10 h-10 sm:w-12 sm:h-12 md:w-15 md:h-15"
                 />
                 <div className="hidden sm:block">
                   <h1 className="text-lg sm:text-xl font-bold text-gray-800">Ministry of Health</h1>
@@ -490,7 +490,7 @@ export default function LandingPage() {
                   alt="Ministry of Health Logo"
                   width={40}
                   height={40}
-                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl shadow-lg"
+                  className="w-10 h-10 sm:w-12 sm:h-12"
                 />
                 <div>
                   <h3 className="text-lg sm:text-xl font-bold">Ministry of Health</h3>
