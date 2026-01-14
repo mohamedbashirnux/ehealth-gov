@@ -326,24 +326,21 @@ export default function LandingPage() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link href="#services">
+            <Link href="/auth/users/user-login">
               <Button size="lg" className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg w-full sm:w-auto">
                 {t.hero.getStarted}
                 <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-gray-800 px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg w-full sm:w-auto">
-              {t.hero.learnMore}
-            </Button>
           </div>
         </div>
 
         {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-white rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-white rounded-full mt-2 animate-pulse"></div>
+        <a href="#services" className="absolute bottom-8 left-1/2 transform -translate-x-1/2 cursor-pointer">
+          <div className="w-6 h-10 border-2 border-white rounded-full flex justify-center animate-bounce">
+            <div className="w-1 h-3 bg-white rounded-full mt-2"></div>
           </div>
-        </div>
+        </a>
       </section>
 
       {/* Features Section */}
