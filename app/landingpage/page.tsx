@@ -39,6 +39,7 @@ export default function LandingPage() {
   const [loading, setLoading] = useState(true)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [language, setLanguage] = useState<'en' | 'so'>('en')
+  const [activeSection, setActiveSection] = useState<'home' | 'services'>('home')
 
   // Background images for the hero section
   const backgroundImages = [
@@ -56,7 +57,27 @@ export default function LandingPage() {
       setCurrentImageIndex((prev) => (prev + 1) % backgroundImages.length)
     }, 5000)
 
-    return () => clearInterval(interval)
+    // Detect scroll position to highlight active section
+    const handleScroll = () => {
+      const servicesSection = document.getElementById('services')
+      if (servicesSection) {
+        const rect = servicesSection.getBoundingClientRect()
+        // If services section is in viewport (top is less than half screen height)
+        if (rect.top <= window.innerHeight / 2 && rect.bottom >= 0) {
+          setActiveSection('services')
+        } else {
+          setActiveSection('home')
+        }
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    handleScroll() // Check initial position
+
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('scroll', handleScroll)
+    }
   }, [])
 
   const fetchServices = async () => {
@@ -106,7 +127,7 @@ export default function LandingPage() {
       },
       hero: {
         title: 'Ministry of Health, Federal Republic of Somalia',
-        subtitle: 'Electronic Health Services Portal',
+        subtitle: 'Electronic Services ',
         description: 'The Ministry of Health Electronic Health Services Portal has been developed to provide electronic public services to citizens and residents. Users can register, apply for health-related administrative services online, upload supporting documents, and track the status of their requests through a secure and transparent system.',
         getStarted: 'Get Started',
         learnMore: 'Learn More'
@@ -206,10 +227,25 @@ export default function LandingPage() {
 
               {/* Menu Items */}
               <div className="hidden lg:flex items-center space-x-6">
-                <Link href="/landingpage" className="text-blue-600 font-semibold hover:text-blue-800 transition-colors">
+                <Link 
+                  href="/landingpage" 
+                  className={`font-semibold transition-colors ${
+                    activeSection === 'home' 
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                      : 'text-gray-700 hover:text-blue-600'
+                  }`}
+                >
                   {t.nav.home}
                 </Link>
-                <Link href="#services" className="text-gray-700 hover:text-blue-600 transition-colors">
+                <Link 
+                  href="#services" 
+                  className={`font-semibold transition-colors ${
+                    activeSection === 'services' 
+                      ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                      : 'text-gray-700 hover:text-blue-600'
+                  }`}
+                  onClick={() => setActiveSection('services')}
+                >
                   {t.nav.eservices}
                 </Link>
                 
